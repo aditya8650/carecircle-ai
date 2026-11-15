@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-navy: #0B192C;
+    --brand-blue: #1E40AF;
+    --brand-cyan: #0284C7;
+    --brand-teal: #0D9488;
+    --brand-emerald: #10B981;
+    --surface-bg: #F8FAFC;
+    --surface-card: #FFFFFF;
+  }
+
+  body {
+    background-color: var(--surface-bg);
+    color: #0F172A;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* High contrast accessible focus indicators (WCAG AA/AAA) */
+  *:focus-visible {
+    outline: 3px solid #2563EB !important;
+    outline-offset: 3px !important;
+  }
+}
+
+/* Reduced motion preference support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Elderly touch-target accessibility helper */
+.touch-target-accessible {
+  min-height: 56px;
+  min-width: 56px;
+}
+
+.touch-target-large {
+  min-height: 64px;
+}
+
+/* Subtle healthcare gradient utility */
+.bg-healthcare-gradient {
+  background: radial-gradient(120% 120% at 50% 0%, #F0FDF4 0%, #F8FAFC 50%, #EFF6FF 100%);
+}
+
+.bg-hero-glow {
+  background: radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.08) 0%, rgba(13, 148, 136, 0.05) 40%, transparent 70%);
+}

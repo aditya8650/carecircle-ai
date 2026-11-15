@@ -1,0 +1,91 @@
+// CareCircle AI - Prisma Schema
+//
+// ============================================================================
+// DATABASE CONFIGURATION:
+// LOCAL DEVELOPMENT FALLBACK:
+// By default, this uses SQLite ("file:./dev.db") so the app runs out-of-the-box
+// with zero external database dependencies or credentials required.
+//
+// FOR CLOUD RUN DEPLOYMENT (PostgreSQL):
+// 1. Change provider from "sqlite" to "postgresql"
+// 2. Set DATABASE_URL in your Cloud Run environment variables to your PostgreSQL connection string:
+//    DATABASE_URL="postgresql://<user>:<password>@<host>:<port>/<dbname>?sslmode=require"
+// 3. Run: npx prisma db push
+// ============================================================================
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model CareCircle {
+  id               String          @id @default(cuid())
+  patientName      String          // e.g. "Ramesh Patel" (fictional)
+  patientAge       Int             // e.g. 72
+  emergencyContact String?         // fictional contact e.g. "+91 98765 43210"
+  elderlyPinHash   String          // bcrypt hash of 4-digit PIN (e.g. "1234")
+  familyCodeHash   String          // bcrypt hash of family access code (e.g. "CARE2026")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  medications      Medication[]
+  appointments     Appointment[]
+  adherenceLogs    AdherenceLog[]
+  emailSettings    EmailSetting?
+}
+
+model Medication {
+  id             String         @id @default(cuid())
+  circleId       String
+  circle         CareCircle     @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  name           String         // e.g. "Metformin"
+  dosage         String         // e.g. "500 mg"
+  instructions   String         // e.g. "Take with breakfast and dinner"
+  scheduledTimes String         // JSON stringified array of times e.g. '["08:00","20:00"]'
+  pillColor      String?        @default("blue") // blue, red, green, yellow, purple
+  active         Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  adherenceLogs  AdherenceLog[]
+}
+
+model AdherenceLog {
+  id           String      @id @default(cuid())
+  circleId     String
+  circle       CareCircle  @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  medicationId String
+  medication   Medication  @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  scheduledFor DateTime    // date and time dose was scheduled for
+  status       String      // "TAKEN", "MISSED", "SKIPPED"
+  takenAt      DateTime?   // timestamp when marked taken
+  notes        String?
+  createdAt    DateTime    @default(now())
+}
+
+model Appointment {
+  id           String      @id @default(cuid())
+  circleId     String
+  circle       CareCircle  @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  doctorName   String      // e.g. "Dr. Sunita Sharma"
+  specialty    String      // e.g. "Cardiologist"
+  clinic       String      // e.g. "City Heart & Health Center"
+  dateTime     DateTime    // Date & time of the appointment
+  notes        String?     // e.g. "Bring latest blood sugar reports"
+  reminderSent Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model EmailSetting {
+  id               String     @id @default(cuid())
+  circleId         String     @unique
+  circle           CareCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  recipientEmail   String     // Caretaker / family member email
+  notifyOnMissed   Boolean    @default(true)
+  notifyOnUpcoming Boolean    @default(true)
+  notifyOnAppt     Boolean    @default(true)
+  updatedAt        DateTime   @updatedAt
+}

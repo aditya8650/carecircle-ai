@@ -4,12 +4,15 @@
 
 @layer base {
   :root {
-    --brand-navy: #0B192C;
-    --brand-blue: #1E40AF;
-    --brand-cyan: #0284C7;
-    --brand-teal: #0D9488;
-    --brand-emerald: #10B981;
-    --surface-bg: #F8FAFC;
+    --brand-forest: #064E3B;
+    --brand-emerald: #059669;
+    --brand-mint: #10B981;
+    --brand-sage: #ECFDF5;
+    --brand-lavender: #F5F3FF;
+    --brand-purple: #7C3AED;
+    --brand-navy: #0A192F;
+    --brand-slate: #0F172A;
+    --surface-bg: #F6FAF7;
     --surface-card: #FFFFFF;
   }
 
@@ -23,7 +26,7 @@
 
   /* High contrast accessible focus indicators (WCAG AA/AAA) */
   *:focus-visible {
-    outline: 3px solid #2563EB !important;
+    outline: 3px solid #059669 !important;
     outline-offset: 3px !important;
   }
 }
@@ -50,11 +53,19 @@
   min-height: 64px;
 }
 
-/* Subtle healthcare gradient utility */
-.bg-healthcare-gradient {
-  background: radial-gradient(120% 120% at 50% 0%, #F0FDF4 0%, #F8FAFC 50%, #EFF6FF 100%);
+/* Distinctive healthcare backgrounds */
+.bg-clinical-canvas {
+  background: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(6, 78, 59, 0.04) 0px, transparent 50%),
+    #F6FAF7;
 }
 
-.bg-hero-glow {
-  background: radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.08) 0%, rgba(13, 148, 136, 0.05) 40%, transparent 70%);
+.bg-sage-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F4FBF7 100%);
+}
+
+.bg-lavender-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FAF8FF 100%);
 }

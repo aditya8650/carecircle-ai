@@ -24,12 +24,17 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
 .env
+.env.local
+.env.*
+!.env.example
 
-# prisma
+# database & persistence files
 *.db
 *.db-journal
+prisma/dev.db
+prisma/*.db
+prisma/*.db-journal
 
 # typescript
 *.tsbuildinfo

@@ -6,14 +6,15 @@ import { DoseCard } from "@/components/elderly/DoseCard";
 import { useI18n } from "@/lib/i18n/context";
 import {
   Heart,
-  ShieldAlert,
   Calendar,
   Sparkles,
   Clock,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
   UserCheck,
+  Sun,
+  Sunset,
+  Moon,
 } from "lucide-react";
 
 interface ScheduleItem {
@@ -24,6 +25,7 @@ interface ScheduleItem {
   instructions: string;
   scheduledTime: string;
   pillColor: string;
+  timePeriod: "morning" | "afternoon" | "evening";
   status: "PENDING" | "TAKEN" | "MISSED" | "SKIPPED";
   takenAt?: string | null;
 }
@@ -98,6 +100,11 @@ export default function ElderlyDashboard() {
 
   // Upcoming appointment within next 7 days
   const nextAppt = appointments.length > 0 ? appointments[0] : null;
+
+  // Group medications by time of day
+  const morningMeds = schedule.filter((s) => s.timePeriod === "morning");
+  const afternoonMeds = schedule.filter((s) => s.timePeriod === "afternoon");
+  const eveningMeds = schedule.filter((s) => s.timePeriod === "evening");
 
   return (
     <div className="min-h-screen bg-slate-100/70 flex flex-col font-sans">
@@ -195,12 +202,8 @@ export default function ElderlyDashboard() {
           </div>
         )}
 
-        {/* Full Today Timeline */}
-        <div className="space-y-5">
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-            Today's Complete Schedule
-          </h2>
-
+        {/* Medication Schedule Grouped Chronologically by Morning, Afternoon, Evening */}
+        <div className="space-y-8">
           {isLoading ? (
             <div className="text-center py-16 text-slate-400 font-bold text-lg">
               Loading medication timeline...
@@ -210,23 +213,94 @@ export default function ElderlyDashboard() {
               {t.noUpcomingDose}
             </div>
           ) : (
-            <div className="space-y-5">
-              {schedule.map((item) => (
-                <DoseCard
-                  key={item.scheduleId}
-                  scheduleId={item.scheduleId}
-                  medicationId={item.medicationId}
-                  name={item.name}
-                  dosage={item.dosage}
-                  instructions={item.instructions}
-                  scheduledTime={item.scheduledTime}
-                  pillColor={item.pillColor}
-                  status={item.status}
-                  takenAt={item.takenAt}
-                  onDoseLogged={fetchData}
-                />
-              ))}
-            </div>
+            <>
+              {/* Morning Group */}
+              {morningMeds.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Sun className="w-5 h-5 text-amber-500" />
+                    <h3 className="text-lg sm:text-xl font-black tracking-tight">
+                      {t.morningMeds}
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    {morningMeds.map((item) => (
+                      <DoseCard
+                        key={item.scheduleId}
+                        scheduleId={item.scheduleId}
+                        medicationId={item.medicationId}
+                        name={item.name}
+                        dosage={item.dosage}
+                        instructions={item.instructions}
+                        scheduledTime={item.scheduledTime}
+                        pillColor={item.pillColor}
+                        status={item.status}
+                        takenAt={item.takenAt}
+                        onDoseLogged={fetchData}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Afternoon Group */}
+              {afternoonMeds.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Sunset className="w-5 h-5 text-orange-500" />
+                    <h3 className="text-lg sm:text-xl font-black tracking-tight">
+                      {t.afternoonMeds}
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    {afternoonMeds.map((item) => (
+                      <DoseCard
+                        key={item.scheduleId}
+                        scheduleId={item.scheduleId}
+                        medicationId={item.medicationId}
+                        name={item.name}
+                        dosage={item.dosage}
+                        instructions={item.instructions}
+                        scheduledTime={item.scheduledTime}
+                        pillColor={item.pillColor}
+                        status={item.status}
+                        takenAt={item.takenAt}
+                        onDoseLogged={fetchData}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Evening Group */}
+              {eveningMeds.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Moon className="w-5 h-5 text-indigo-500" />
+                    <h3 className="text-lg sm:text-xl font-black tracking-tight">
+                      {t.eveningMeds}
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    {eveningMeds.map((item) => (
+                      <DoseCard
+                        key={item.scheduleId}
+                        scheduleId={item.scheduleId}
+                        medicationId={item.medicationId}
+                        name={item.name}
+                        dosage={item.dosage}
+                        instructions={item.instructions}
+                        scheduledTime={item.scheduledTime}
+                        pillColor={item.pillColor}
+                        status={item.status}
+                        takenAt={item.takenAt}
+                        onDoseLogged={fetchData}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

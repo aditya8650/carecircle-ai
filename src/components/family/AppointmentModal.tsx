@@ -8,19 +8,41 @@ interface AppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialData?: {
+    id?: string;
+    doctorName: string;
+    specialty: string;
+    clinic: string;
+    dateTime: string;
+    notes?: string | null;
+  } | null;
 }
 
 export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  initialData,
 }) => {
   const { t } = useI18n();
-  const [doctorName, setDoctorName] = useState("");
-  const [specialty, setSpecialty] = useState("General Medicine");
-  const [clinic, setClinic] = useState("");
-  const [dateTime, setDateTime] = useState("");
-  const [notes, setNotes] = useState("");
+
+  // Format existing date to YYYY-MM-DDTHH:mm for datetime-local input
+  const getFormattedDateTime = (isoStr?: string) => {
+    if (!isoStr) return "";
+    try {
+      const d = new Date(isoStr);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch {
+      return "";
+    }
+  };
+
+  const [doctorName, setDoctorName] = useState(initialData?.doctorName || "");
+  const [specialty, setSpecialty] = useState(initialData?.specialty || "General Medicine");
+  const [clinic, setClinic] = useState(initialData?.clinic || "");
+  const [dateTime, setDateTime] = useState(getFormattedDateTime(initialData?.dateTime));
+  const [notes, setNotes] = useState(initialData?.notes || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,10 +59,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     setError(null);
 
     try {
-      const res = await fetch("/api/appointments", {
-        method: "POST",
+      const isEdit = Boolean(initialData?.id);
+      const endpoint = "/api/appointments";
+      const method = isEdit ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(isEdit && { id: initialData?.id }),
           doctorName,
           specialty,
           clinic,
@@ -51,7 +78,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to schedule appointment.");
+        throw new Error(data.error || "Failed to save appointment.");
       }
 
       onSuccess();
@@ -77,7 +104,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <CalendarCheck2 className="w-5 h-5" />
             </div>
             <h3 className="text-lg font-bold text-slate-900">
-              {t.addAppointmentBtn}
+              {initialData?.id ? t.editAppointmentBtn : t.addAppointmentBtn}
             </h3>
           </div>
           <button

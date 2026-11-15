@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { sanitizeScheduledTimes } from "@/lib/schedule";
 
 export async function GET() {
   try {
@@ -52,9 +53,24 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, dosage, instructions, scheduledTimes, pillColor } = body;
 
-    if (!name || !dosage) {
+    if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
-        { error: "Medication name and dosage are required." },
+        { error: "Medication name is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!dosage || typeof dosage !== "string" || !dosage.trim()) {
+      return NextResponse.json(
+        { error: "Dosage is required (e.g., 500 mg, 1 tablet)." },
+        { status: 400 }
+      );
+    }
+
+    const validatedTimes = sanitizeScheduledTimes(scheduledTimes);
+    if (validatedTimes.length === 0) {
+      return NextResponse.json(
+        { error: "At least one valid scheduled time (HH:MM in 24h format) is required." },
         { status: 400 }
       );
     }
@@ -70,17 +86,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const timesArray = Array.isArray(scheduledTimes)
-      ? scheduledTimes
-      : scheduledTimes ? [scheduledTimes] : ["08:00"];
-
     const newMed = await prisma.medication.create({
       data: {
         circleId: circle.id,
         name: name.trim(),
         dosage: dosage.trim(),
         instructions: (instructions || "").trim(),
-        scheduledTimes: JSON.stringify(timesArray),
+        scheduledTimes: JSON.stringify(validatedTimes),
         pillColor: pillColor || "blue",
         active: true,
       },
@@ -90,7 +102,7 @@ export async function POST(req: NextRequest) {
       success: true,
       medication: {
         ...newMed,
-        scheduledTimes: timesArray,
+        scheduledTimes: validatedTimes,
       },
     });
   } catch (error: unknown) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { sanitizeScheduledTimes } from "@/lib/schedule";
 
 export async function PUT(
   req: NextRequest,
@@ -18,9 +19,16 @@ export async function PUT(
       );
     }
 
-    const timesArray = Array.isArray(scheduledTimes)
-      ? scheduledTimes
-      : scheduledTimes ? [scheduledTimes] : JSON.parse(existing.scheduledTimes);
+    let validatedTimes: string[] | undefined;
+    if (scheduledTimes !== undefined) {
+      validatedTimes = sanitizeScheduledTimes(scheduledTimes);
+      if (validatedTimes.length === 0) {
+        return NextResponse.json(
+          { error: "At least one valid scheduled time (HH:MM in 24h format) is required." },
+          { status: 400 }
+        );
+      }
+    }
 
     const updated = await prisma.medication.update({
       where: { id },
@@ -28,7 +36,7 @@ export async function PUT(
         ...(name && { name: name.trim() }),
         ...(dosage && { dosage: dosage.trim() }),
         ...(instructions !== undefined && { instructions: instructions.trim() }),
-        ...(scheduledTimes !== undefined && { scheduledTimes: JSON.stringify(timesArray) }),
+        ...(validatedTimes && { scheduledTimes: JSON.stringify(validatedTimes) }),
         ...(pillColor && { pillColor }),
         ...(active !== undefined && { active: Boolean(active) }),
       },
@@ -38,7 +46,7 @@ export async function PUT(
       success: true,
       medication: {
         ...updated,
-        scheduledTimes: timesArray,
+        scheduledTimes: validatedTimes || JSON.parse(updated.scheduledTimes),
       },
     });
   } catch (error: unknown) {
@@ -65,7 +73,6 @@ export async function DELETE(
       );
     }
 
-    // Soft delete by marking inactive or cascade delete
     await prisma.medication.delete({ where: { id } });
 
     return NextResponse.json({ success: true, message: "Medication removed." });

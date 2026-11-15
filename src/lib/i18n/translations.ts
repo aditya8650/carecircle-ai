@@ -44,6 +44,9 @@ export interface Translations {
   afternoon: string;
   evening: string;
   night: string;
+  morningMeds: string;
+  afternoonMeds: string;
+  eveningMeds: string;
 
   // Family Screen
   familyDashboardTitle: string;
@@ -60,6 +63,7 @@ export interface Translations {
   editMedicationBtn: string;
   deleteMedicationBtn: string;
   addAppointmentBtn: string;
+  editAppointmentBtn: string;
   sendTestEmailBtn: string;
   sendingEmail: string;
   emailSentSuccess: string;
@@ -77,8 +81,25 @@ export interface Translations {
   dateTime: string;
   notes: string;
   upcomingAppts: string;
+  pastAppts: string;
   noAppts: string;
   noMeds: string;
+
+  // Search & Filters
+  searchMedsPlaceholder: string;
+  filterAll: string;
+  filterMorning: string;
+  filterAfternoon: string;
+  filterEvening: string;
+  filterUpcoming: string;
+  filterPast: string;
+  streakLabel: string;
+  streakDaysUnit: string;
+  clickDayToFilter: string;
+  showingLogsFor: string;
+  clearDateFilter: string;
+  previewEmailBtn: string;
+  simulatedInspectorTitle: string;
 
   // Landing Page additions
   howItWorksTitle: string;
@@ -90,6 +111,7 @@ export interface Translations {
   step3Title: string;
   step3Desc: string;
   previewHeroTitle: string;
+  medicalDisclaimer: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -99,13 +121,13 @@ export const translations: Record<Language, Translations> = {
     selectRole: "Choose a View to Continue",
     elderlyMode: "Elderly Care View",
     elderlyDesc: "High-contrast cards, extra-large touch targets, and 1-tap dose tracking.",
-    familyMode: "Family & Caretaker Portal",
-    familyDesc: "Adherence analytics, medication schedules, doctor visits, and alerts.",
+    familyMode: "Family & Caretaker Command Center",
+    familyDesc: "Adherence analytics, medication schedules, calendar tracking, and alerts.",
     enterPin: "Enter 4-Digit Elderly PIN",
     enterFamilyCode: "Enter Family Access Code",
     pinPlaceholder: "e.g. 1234",
     codePlaceholder: "e.g. CARE2026",
-    loginBtn: "Unlock View",
+    loginBtn: "Unlock Dashboard",
     logoutBtn: "Exit / Switch View",
     quickDemoPin: "Demo PIN: 1234",
     quickDemoFamily: "Demo Code: CARE2026",
@@ -137,10 +159,13 @@ export const translations: Record<Language, Translations> = {
     afternoon: "Afternoon",
     evening: "Evening",
     night: "Night",
+    morningMeds: "Morning Medications (06:00 - 12:00)",
+    afternoonMeds: "Afternoon Medications (12:00 - 17:00)",
+    eveningMeds: "Evening & Bedtime Medications (17:00+)",
 
     // Family Screen
-    familyDashboardTitle: "Family & Caretaker Portal",
-    familyDashboardSubtitle: "Real-time medication adherence & appointment oversight for Ramesh Patel",
+    familyDashboardTitle: "Caregiver Command Center",
+    familyDashboardSubtitle: "Real-time medication adherence & clinical oversight for Ramesh Patel",
     adherenceRate: "7-Day Adherence Rate",
     dosesTaken: "Doses Confirmed",
     dosesMissed: "Doses Missed",
@@ -150,9 +175,10 @@ export const translations: Record<Language, Translations> = {
     appointmentsTab: "Doctor Appointments",
     notificationsTab: "Notification Engine",
     addMedicationBtn: "Add New Medication",
-    editMedicationBtn: "Edit",
+    editMedicationBtn: "Edit Schedule",
     deleteMedicationBtn: "Remove",
     addAppointmentBtn: "Schedule Doctor Visit",
+    editAppointmentBtn: "Edit Appointment",
     sendTestEmailBtn: "Trigger Simulated Email Test",
     sendingEmail: "Processing Dispatch...",
     emailSentSuccess: "Notification test triggered! Check recipient inbox or server log.",
@@ -170,8 +196,25 @@ export const translations: Record<Language, Translations> = {
     dateTime: "Date & Time",
     notes: "Notes for Doctor Visit",
     upcomingAppts: "Scheduled Doctor Appointments",
-    noAppts: "No doctor appointments scheduled yet.",
+    pastAppts: "Past Doctor Visits",
+    noAppts: "No doctor appointments found.",
     noMeds: "No active medications configured.",
+
+    // Search & Filters
+    searchMedsPlaceholder: "Search medications by name or instructions...",
+    filterAll: "All Periods",
+    filterMorning: "Morning",
+    filterAfternoon: "Afternoon",
+    filterEvening: "Night",
+    filterUpcoming: "Upcoming Visits",
+    filterPast: "Completed Visits",
+    streakLabel: "Adherence Streak",
+    streakDaysUnit: "Consecutive Days",
+    clickDayToFilter: "Click any date to inspect daily adherence records:",
+    showingLogsFor: "Showing records for:",
+    clearDateFilter: "Show All 7 Days",
+    previewEmailBtn: "Inspect Email Template HTML",
+    simulatedInspectorTitle: "Transactional Email Preview Inspector",
 
     // Landing Page
     howItWorksTitle: "How CareCircle AI Works",
@@ -183,6 +226,7 @@ export const translations: Record<Language, Translations> = {
     step3Title: "3. Real-Time Adherence & Alerts",
     step3Desc: "Families monitor adherence metrics and receive alerts if doses are missed or appointments are near.",
     previewHeroTitle: "Live Interactive Dashboard Preview",
+    medicalDisclaimer: "Medical Notice: CareCircle AI is a collaborative routine scheduling aid featuring fictional patient data for hackathon evaluation. Always consult licensed medical practitioners for healthcare decisions.",
   },
   hi: {
     appName: "केयरसर्कल AI (CareCircle AI)",
@@ -191,12 +235,12 @@ export const translations: Record<Language, Translations> = {
     elderlyMode: "बुजुर्ग सहायता व्यू (Elderly View)",
     elderlyDesc: "बड़े बटन, उच्च कंट्रास्ट और 1-क्लिक दवा ट्रैकिंग।",
     familyMode: "परिवार व देखभालकर्ता पोर्टल (Family View)",
-    familyDesc: "दवा का रिकॉर्ड, शेड्यूल, डॉक्टर अपॉइंटमेंट और ईमेल अलर्ट।",
+    familyDesc: "दवा का रिकॉर्ड, कैलेंडर, शेड्यूल, डॉक्टर अपॉइंटमेंट और ईमेल अलर्ट।",
     enterPin: "4-अंकों का पिन दर्ज करें",
     enterFamilyCode: "परिवार एक्सेस कोड दर्ज करें",
     pinPlaceholder: "उदा. 1234",
     codePlaceholder: "उदा. CARE2026",
-    loginBtn: "व्यू खोलें",
+    loginBtn: "डैशबोर्ड खोलें",
     logoutBtn: "बाहर निकलें / मोड बदलें",
     quickDemoPin: "डेमो पिन: 1234",
     quickDemoFamily: "डेमो कोड: CARE2026",
@@ -228,9 +272,12 @@ export const translations: Record<Language, Translations> = {
     afternoon: "दोपहर",
     evening: "शाम",
     night: "रात",
+    morningMeds: "सुबह की दवाइयाँ (06:00 - 12:00)",
+    afternoonMeds: "दोपहर की दवाइयाँ (12:00 - 17:00)",
+    eveningMeds: "शाम और रात की दवाइयाँ (17:00+)",
 
     // Family Screen
-    familyDashboardTitle: "परिवार एवं देखभालकर्ता पोर्टल",
+    familyDashboardTitle: "देखभालकर्ता कमांड सेंटर",
     familyDashboardSubtitle: "रमेश पटेल जी की दवा और स्वास्थ्य दिनचर्या की रीयल-टाइम निगरानी",
     adherenceRate: "7-दिवसीय दवा अनुपालन दर",
     dosesTaken: "पुष्टि की गई खुराक",
@@ -244,6 +291,7 @@ export const translations: Record<Language, Translations> = {
     editMedicationBtn: "संपादित करें",
     deleteMedicationBtn: "हटाएं",
     addAppointmentBtn: "डॉक्टर अपॉइंटमेंट जोड़ें",
+    editAppointmentBtn: "अपॉइंटमेंट बदलें",
     sendTestEmailBtn: "सिम्युलेटेड ईमेल टेस्ट भेजें",
     sendingEmail: "प्रक्रिया जारी है...",
     emailSentSuccess: "ईमेल टेस्ट भेजा गया! इनबॉक्स या सर्वर लॉग जांचें।",
@@ -261,8 +309,25 @@ export const translations: Record<Language, Translations> = {
     dateTime: "दिनांक और समय",
     notes: "आवश्यक नोट्स",
     upcomingAppts: "आगामी डॉक्टर अपॉइंटमेंट",
-    noAppts: "कोई अपॉइंटमेंट निर्धारित नहीं है।",
+    pastAppts: "पूर्व अपॉइंटमेंट",
+    noAppts: "कोई अपॉइंटमेंट नहीं मिली।",
     noMeds: "वर्तमान में कोई दवा सक्रिय नहीं है।",
+
+    // Search & Filters
+    searchMedsPlaceholder: "दवा का नाम या निर्देश खोजें...",
+    filterAll: "सभी समय",
+    filterMorning: "सुबह",
+    filterAfternoon: "दोपहर",
+    filterEvening: "रात",
+    filterUpcoming: "आगामी विज़िट",
+    filterPast: "पूर्ण विज़िट",
+    streakLabel: "नियमितता स्ट्रीक",
+    streakDaysUnit: "लगातार दिन",
+    clickDayToFilter: "दैनिक रिकॉर्ड देखने के लिए किसी भी तारीख पर क्लिक करें:",
+    showingLogsFor: "इस दिन का रिकॉर्ड दिख रहा है:",
+    clearDateFilter: "सभी 7 दिन देखें",
+    previewEmailBtn: "ईमेल टेम्प्लेट HTML देखें",
+    simulatedInspectorTitle: "ईमेल पूर्वावलोकन इंस्पेक्टर",
 
     // Landing Page
     howItWorksTitle: "केयरसर्कल AI कैसे काम करता है",
@@ -274,5 +339,6 @@ export const translations: Record<Language, Translations> = {
     step3Title: "3. रीयल-टाइम अलर्ट और समीक्षा",
     step3Desc: "परिवार को रीयल-टाइम रिकॉर्ड दिखता है और दवा छूटने पर तुरंत अलर्ट मिलता है।",
     previewHeroTitle: "इंटरैक्टिव डैशबोर्ड पूर्वावलोकन",
+    medicalDisclaimer: "चिकित्सीय सूचना: केयरसर्कल AI एक सहायक शेड्यूलिंग मंच है जो काल्पनिक डेमो डेटा पर चलता है। किसी भी चिकित्सीय निर्णय के लिए हमेशा योग्य डॉक्टर से सलाह लें।",
   },
 };

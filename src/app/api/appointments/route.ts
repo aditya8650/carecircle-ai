@@ -82,6 +82,61 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, doctorName, specialty, clinic, dateTime, notes } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Appointment ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.appointment.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Appointment not found." },
+        { status: 404 }
+      );
+    }
+
+    let parsedDate: Date | undefined;
+    if (dateTime) {
+      parsedDate = new Date(dateTime);
+      if (isNaN(parsedDate.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid date format." },
+          { status: 400 }
+        );
+      }
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id },
+      data: {
+        ...(doctorName && { doctorName: doctorName.trim() }),
+        ...(specialty && { specialty: specialty.trim() }),
+        ...(clinic && { clinic: clinic.trim() }),
+        ...(parsedDate && { dateTime: parsedDate }),
+        ...(notes !== undefined && { notes: notes.trim() }),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      appointment: updated,
+    });
+  } catch (error: unknown) {
+    console.error("[Update Appointment Error]", error);
+    return NextResponse.json(
+      { error: "Failed to update appointment." },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);

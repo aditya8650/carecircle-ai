@@ -1,14 +1,17 @@
 "use client";
 
-import React from "react";
-import { CheckCircle2, XCircle, TrendingUp, Calendar, AlertTriangle, ShieldCheck } from "lucide-react";
+import React, { useState } from "react";
+import { CheckCircle2, XCircle, TrendingUp, Calendar, AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
+import { WeeklyCalendar, DayData } from "./WeeklyCalendar";
 
 interface AdherenceChartProps {
   adherenceRate: number;
   totalTaken: number;
   totalMissed: number;
   totalScheduled: number;
+  streakDays: number;
+  dailyTrend: DayData[];
   recentLogs: Array<{
     id: string;
     medicationName: string;
@@ -25,15 +28,23 @@ export const AdherenceChart: React.FC<AdherenceChartProps> = ({
   totalTaken,
   totalMissed,
   totalScheduled,
+  streakDays,
+  dailyTrend,
   recentLogs,
 }) => {
   const { t } = useI18n();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const getAdherenceBadgeColor = (rate: number) => {
     if (rate >= 85) return "text-emerald-800 bg-emerald-50 border-emerald-300";
     if (rate >= 65) return "text-amber-800 bg-amber-50 border-amber-300";
     return "text-rose-800 bg-rose-50 border-rose-300";
   };
+
+  // Filter logs if a date is selected from the weekly calendar
+  const filteredLogs = selectedDate
+    ? recentLogs.filter((log) => log.scheduledFor.startsWith(selectedDate))
+    : recentLogs;
 
   return (
     <div className="space-y-6">
@@ -112,6 +123,16 @@ export const AdherenceChart: React.FC<AdherenceChartProps> = ({
         </div>
       </div>
 
+      {/* Interactive 7-Day Adherence Calendar */}
+      {dailyTrend && dailyTrend.length > 0 && (
+        <WeeklyCalendar
+          days={dailyTrend}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          streakDays={streakDays}
+        />
+      )}
+
       {/* Adherence Audit Trail Table */}
       <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-2xs">
         <div className="flex items-center justify-between mb-5">
@@ -128,9 +149,9 @@ export const AdherenceChart: React.FC<AdherenceChartProps> = ({
           </div>
         </div>
 
-        {recentLogs.length === 0 ? (
+        {filteredLogs.length === 0 ? (
           <div className="text-center py-12 text-slate-400 font-medium text-sm">
-            No adherence logs recorded yet.
+            No adherence records found for this selection.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -141,11 +162,11 @@ export const AdherenceChart: React.FC<AdherenceChartProps> = ({
                   <th className="py-2.5 px-3">Scheduled For</th>
                   <th className="py-2.5 px-3">Status</th>
                   <th className="py-2.5 px-3">Confirmed At</th>
-                  <th className="py-2.5 px-3">Notes</th>
+                  <th className="py-2.5 px-3">Clinical Notes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-                {recentLogs.map((log) => (
+                {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-3 font-bold text-slate-900">
                       {log.medicationName}{" "}

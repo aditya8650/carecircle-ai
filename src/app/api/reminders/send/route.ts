@@ -6,9 +6,23 @@ import {
   buildMissedDoseTemplate,
   buildAppointmentTemplate,
 } from "@/lib/email";
+import { checkRateLimit } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "local-client";
+    const rateCheck = checkRateLimit(`${ip}:reminders`);
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `Rate limit exceeded for email notifications. Please wait ${rateCheck.retryAfterSeconds}s before dispatching another alert.`,
+          remainingAttempts: 0,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const {
       type = "upcoming_dose",
@@ -22,7 +36,6 @@ export async function POST(req: NextRequest) {
       clinic = "City Heart & Health Center",
     } = body;
 
-    // Determine target recipient email: from request body, from DB settings, or fallback demo
     let targetEmail = recipientEmail;
 
     if (!targetEmail) {
@@ -61,8 +74,9 @@ export async function POST(req: NextRequest) {
       result: dispatchResult,
       explanation:
         dispatchResult.mode === "resend_live"
-          ? "Live email delivered through Resend API."
+          ? "Live transactional email delivered through Resend API."
           : "Credentials not provided; verified simulation executed and logged to server console. To dispatch live emails, add RESEND_API_KEY to your environment variables.",
+      previewHtml: html, // Provide formatted HTML for client-side inspector
     });
   } catch (error: unknown) {
     console.error("[Reminder Dispatch API Error]", error);

@@ -20,6 +20,9 @@ import {
   AlertCircle,
   Clock,
   ShieldCheck,
+  Search,
+  Filter,
+  Eye,
   Info,
 } from "lucide-react";
 
@@ -34,15 +37,22 @@ export default function FamilyDashboard() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Search & Filter State
+  const [medSearch, setMedSearch] = useState("");
+  const [medTimeFilter, setMedTimeFilter] = useState<"all" | "morning" | "afternoon" | "evening">("all");
+  const [apptFilter, setApptFilter] = useState<"upcoming" | "past">("upcoming");
+
   // Modals
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
   const [editingMed, setEditingMed] = useState<any | null>(null);
   const [isApptModalOpen, setIsApptModalOpen] = useState(false);
+  const [editingAppt, setEditingAppt] = useState<any | null>(null);
 
   // Email test state
   const [testEmail, setTestEmail] = useState("caretaker.demo@carecircle.ai");
   const [emailAlertResult, setEmailAlertResult] = useState<any | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -130,20 +140,49 @@ export default function FamilyDashboard() {
     }
   };
 
+  // Filter Medications by Search & Time
+  const filteredMeds = medications.filter((m) => {
+    const matchesSearch =
+      m.name.toLowerCase().includes(medSearch.toLowerCase()) ||
+      (m.instructions && m.instructions.toLowerCase().includes(medSearch.toLowerCase()));
+
+    if (!matchesSearch) return false;
+    if (medTimeFilter === "all") return true;
+
+    const times: string[] = m.scheduledTimes || [];
+    return times.some((t) => {
+      const hour = parseInt(t.split(":")[0], 10);
+      if (medTimeFilter === "morning") return hour >= 6 && hour < 12;
+      if (medTimeFilter === "afternoon") return hour >= 12 && hour < 17;
+      if (medTimeFilter === "evening") return hour >= 17;
+      return true;
+    });
+  });
+
+  // Filter Appointments by Upcoming vs Past
+  const now = new Date();
+  const filteredAppointments = appointments.filter((appt) => {
+    const apptDate = new Date(appt.dateTime);
+    return apptFilter === "upcoming" ? apptDate >= now : apptDate < now;
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar currentRole="family" patientName="Ramesh Patel" />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {/* Top Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Patient Command Bar */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-3 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-[11px] font-black uppercase tracking-wider">
-                Caretaker Management View
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-black uppercase tracking-wider">
+                Active Patient Circle
               </span>
-              <span className="text-xs font-semibold text-slate-500">
-                Patient: Ramesh Patel (72)
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                Type 2 Diabetes
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                Hypertension
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -154,7 +193,7 @@ export default function FamilyDashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => {
                 setEditingMed(null);
@@ -166,7 +205,10 @@ export default function FamilyDashboard() {
               <span>{t.addMedicationBtn}</span>
             </button>
             <button
-              onClick={() => setIsApptModalOpen(true)}
+              onClick={() => {
+                setEditingAppt(null);
+                setIsApptModalOpen(true);
+              }}
               className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold text-xs sm:text-sm shadow-xs transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
@@ -247,38 +289,61 @@ export default function FamilyDashboard() {
                 totalTaken={adherenceData.totalTaken}
                 totalMissed={adherenceData.totalMissed}
                 totalScheduled={adherenceData.totalScheduled}
+                streakDays={adherenceData.streakDays || 5}
+                dailyTrend={adherenceData.dailyTrend || []}
                 recentLogs={adherenceData.recentLogs || []}
               />
             ) : null}
           </div>
         )}
 
-        {/* Tab 2: Medications CRUD */}
+        {/* Tab 2: Medications CRUD with Search & Filters */}
         {activeTab === "medications" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black text-slate-900">
-                Active Medication Schedules
-              </h2>
-              <button
-                onClick={() => {
-                  setEditingMed(null);
-                  setIsMedModalOpen(true);
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t.addMedicationBtn}</span>
-              </button>
+            {/* Search and Time Filters */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={medSearch}
+                  onChange={(e) => setMedSearch(e.target.value)}
+                  placeholder={t.searchMedsPlaceholder}
+                  className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-medium"
+                />
+              </div>
+
+              {/* Time filter chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                {(["all", "morning", "afternoon", "evening"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setMedTimeFilter(filter)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer shrink-0 ${
+                      medTimeFilter === filter
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {filter === "all"
+                      ? t.filterAll
+                      : filter === "morning"
+                      ? t.filterMorning
+                      : filter === "afternoon"
+                      ? t.filterAfternoon
+                      : t.filterEvening}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {medications.length === 0 ? (
+            {filteredMeds.length === 0 ? (
               <div className="text-center py-16 rounded-3xl bg-white border border-slate-200 text-slate-400 font-bold text-sm">
-                {t.noMeds}
+                No medications matched your filter.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {medications.map((med) => (
+                {filteredMeds.map((med) => (
                   <div
                     key={med.id}
                     className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between"
@@ -318,14 +383,14 @@ export default function FamilyDashboard() {
                               setIsMedModalOpen(true);
                             }}
                             className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition cursor-pointer"
-                            title="Edit Medication"
+                            title={t.editMedicationBtn}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteMed(med.id)}
                             className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
-                            title="Delete Medication"
+                            title={t.deleteMedicationBtn}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -364,29 +429,52 @@ export default function FamilyDashboard() {
           </div>
         )}
 
-        {/* Tab 3: Appointments */}
+        {/* Tab 3: Appointments with Filters & Edit */}
         {activeTab === "appointments" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black text-slate-900">
-                Doctor Appointments & Routine Visits
-              </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setApptFilter("upcoming")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    apptFilter === "upcoming"
+                      ? "bg-teal-600 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {t.filterUpcoming}
+                </button>
+                <button
+                  onClick={() => setApptFilter("past")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    apptFilter === "past"
+                      ? "bg-teal-600 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {t.filterPast}
+                </button>
+              </div>
+
               <button
-                onClick={() => setIsApptModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                onClick={() => {
+                  setEditingAppt(null);
+                  setIsApptModalOpen(true);
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{t.addAppointmentBtn}</span>
               </button>
             </div>
 
-            {appointments.length === 0 ? (
+            {filteredAppointments.length === 0 ? (
               <div className="text-center py-16 rounded-3xl bg-white border border-slate-200 text-slate-400 font-bold text-sm">
                 {t.noAppts}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {appointments.map((appt) => (
+                {filteredAppointments.map((appt) => (
                   <div
                     key={appt.id}
                     className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-2xs flex flex-col justify-between"
@@ -407,13 +495,25 @@ export default function FamilyDashboard() {
                           </div>
                         </div>
 
-                        <button
-                          onClick={() => handleDeleteAppt(appt.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
-                          title="Delete Appointment"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingAppt(appt);
+                              setIsApptModalOpen(true);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-teal-600 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                            title={t.editAppointmentBtn}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAppt(appt.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                            title="Remove Appointment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="space-y-1.5 mb-3 text-xs sm:text-sm font-semibold text-slate-700">
@@ -532,7 +632,7 @@ export default function FamilyDashboard() {
                   ) : (
                     <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   )}
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-black text-sm">
                       {emailAlertResult.success
                         ? emailAlertResult.result?.mode === "resend_live"
@@ -543,12 +643,34 @@ export default function FamilyDashboard() {
                     <p className="text-xs font-medium mt-1">
                       {emailAlertResult.explanation || emailAlertResult.result?.message}
                     </p>
+
                     {emailAlertResult.result && (
                       <div className="mt-2 text-[11px] font-mono bg-white/80 p-2.5 rounded-xl border border-slate-200 space-y-0.5">
                         <div><strong>Recipient:</strong> {emailAlertResult.result.recipient}</div>
                         <div><strong>Subject:</strong> {emailAlertResult.result.subject}</div>
                         <div><strong>Execution Mode:</strong> {emailAlertResult.result.mode}</div>
                         <div><strong>Timestamp:</strong> {emailAlertResult.result.timestamp}</div>
+                      </div>
+                    )}
+
+                    {/* HTML Template Inspector Toggle */}
+                    {emailAlertResult.previewHtml && (
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowHtmlPreview(!showHtmlPreview)}
+                          className="flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{showHtmlPreview ? "Hide HTML Template Inspector" : t.previewEmailBtn}</span>
+                        </button>
+
+                        {showHtmlPreview && (
+                          <div
+                            className="mt-2.5 p-4 bg-white rounded-xl border border-slate-200 overflow-auto max-h-72 text-slate-800"
+                            dangerouslySetInnerHTML={{ __html: emailAlertResult.previewHtml }}
+                          />
+                        )}
                       </div>
                     )}
                   </div>
@@ -587,8 +709,12 @@ export default function FamilyDashboard() {
       {isApptModalOpen && (
         <AppointmentModal
           isOpen={isApptModalOpen}
-          onClose={() => setIsApptModalOpen(false)}
+          onClose={() => {
+            setIsApptModalOpen(false);
+            setEditingAppt(null);
+          }}
           onSuccess={fetchData}
+          initialData={editingAppt}
         />
       )}
     </div>

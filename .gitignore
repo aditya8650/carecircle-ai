@@ -32,9 +32,11 @@ yarn-error.log*
 # database & persistence files
 *.db
 *.db-journal
+*.backup
 prisma/dev.db
 prisma/*.db
 prisma/*.db-journal
+prisma/*.backup
 
 # typescript
 *.tsbuildinfo
